@@ -39,9 +39,10 @@ from radioEnvironment.transmission import RadioTransmission
 from radioEnvironment.radioEnvironment import RadioEnvironment
 from loraPHY.loraPacket import LoraPacket
 from typing import Callable
+from IHaveProperties import IHaveProperties
 
 
-class LoraModem(IEventSubscriber, IModem):
+class LoraModem(IEventSubscriber, IModem, IHaveProperties):
     def __init__(self, event_queue: IEventQueue, radio_env: RadioEnvironment):
         self.modem_settings = ModemSettings()
         self.modem_state = LoraModemState.IDLE
@@ -57,6 +58,9 @@ class LoraModem(IEventSubscriber, IModem):
         self.last_received: LoraPacket or None = None
         self.radio_env.register_modem(self)
         self.event_queue.subscribe(self, (self, "STATE"))
+
+    def get_properties(self):
+        return {"Конфигурация модема": self.modem_settings}
 
     def calculate_modem_startup_time(self):
         return 0.0015

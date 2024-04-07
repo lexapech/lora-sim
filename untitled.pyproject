@@ -1,0 +1,27 @@
+{
+    "files": [
+        "mainwindow.ui",
+        "main.py",
+        "eventSimulator/__init__.py",
+        "eventSimulator/event.py",
+        "eventSimulator/eventQueue.py",
+        "eventSimulator/IEventQueue.py",
+        "eventSimulator/IEventSubscriber.py",
+        "loraPHY/__init__.py",
+        "loraPHY/enums.py",
+        "loraPHY/lora.py",
+        "loraPHY/loraPacket.py",
+        "loraPHY/modem.py",
+        "loraPHY/modemSettings.py",
+        "networkDevice/__init__.py",
+        "networkDevice/deviceTimer.py",
+        "networkDevice/networkDevice.py",
+        "radioEnvironment/__init__.py",
+        "radioEnvironment/IModem.py",
+        "radioEnvironment/radioEnvironment.py",
+        "radioEnvironment/radioHelpers.py",
+        "radioEnvironment/transmission.py",
+        "radioEnvironment/transmissionState.py",
+        "main2.py"
+    ]
+}

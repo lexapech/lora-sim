@@ -1,80 +1,98 @@
+# This Python file uses the following encoding: utf-8
+import sys
 
-from eventSimulator.eventQueue import EventQueue
-from eventSimulator.event import DiscreteEvent
-from eventSimulator.IEventSubscriber import IEventSubscriber
-from radioEnvironment.radioEnvironment import RadioEnvironment
-from loraPHY.modem import LoraModem
-from loraPHY.enums import LoraBandwidth, LoraSpreadFactor, LoraCodingRate
-from loraPHY.loraPacket import LoraPacket
-from networkDevice.deviceTimer import DeviceTimer
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PySide6.QtCore import QStringListModel
+from PySide6.QtGui import QStandardItem, QStandardItemModel
 
-queue = EventQueue()
+# Important:
+# You need to run the following command to generate the ui_form.py file
+#     pyside6-uic form.ui -o ui_form.py, or
+#     pyside2-uic form.ui -o ui_form.py
+from ui_mainwindow import Ui_MainWindow
 
-env = RadioEnvironment(queue)
+from main2 import WorkerThread
+from networkDevice.networkDevice import LoraDevice
+from IHaveProperties import IHaveProperties
 
-modem1 = LoraModem(queue, env)
+class MainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super(MainWindow, self).__init__(parent=parent)
+        self.ui = Ui_MainWindow()
+        self.workerThread = WorkerThread()
+        self.workerThread.logger.message.connect(self.printLogs)
+        self.workerThread.simulation.deviceListChanged.connect(self.updateDeviceList)
+ 
+        self.devices=[]
+        self.ui.setupUi(self)
 
-modem2 = LoraModem(queue, env)
+        self.deviceListModel = QStringListModel()
+        self.ui.listView.setModel(self.deviceListModel)
+        self.ui.listView.clicked.connect(self.on_listview_selection_changed)
 
-modem3 = LoraModem(queue, env)
+        self.propertiesTableModel = QStandardItemModel()
+        self.propertiesTableModel.setHorizontalHeaderLabels(["Свойство","Значение"])
+        self.propertiesTableModel.setColumnCount(2)
+        self.ui.treeView.setModel(self.propertiesTableModel)
 
-modem1.modem_settings.spread_factor = LoraSpreadFactor.SF_5
-modem1.modem_settings.power = 0
-modem1.modem_settings.bandwidth = LoraBandwidth.BW_125
-modem1.modem_settings.coding_rate = LoraCodingRate.CR_4_5
-modem1.modem_settings.frequency = 868000000
-modem1.modem_settings.preamble = 12
-modem1.position = (100, 0)
+    def show(self):
+        super(MainWindow, self).show()
+        self.workerThread.start()
+
+    def printLogs(self,message):
+        self.ui.textEdit.append(message)
+
+    def updateDeviceList(self, devices: list[LoraDevice]):
+        self.devices = devices
+        self.deviceListModel.setStringList([x.name for x in devices])
+
+    def on_listview_selection_changed(self):
+    # Get selection object from view
+        selected = self.ui.listView.selectedIndexes()
+            
+        for index in selected:
+            # Retrieve data from the model using QModelIndex
+            self.updatePropertiesTable(self.devices[index.row()])
+
+    def updatePropertiesTable(self,device):
+        
+        root = self.propertiesTableModel.invisibleRootItem()
+        self.propertiesTableModel.removeRows(0,root.rowCount(),self.propertiesTableModel.indexFromItem(root))
+        self.addPropList(root,device)
+        
+    def addPropList(self,root,obj):
+        if isinstance(obj,IHaveProperties):
+            data = obj.get_properties()
+        else:
+            data = obj.__dict__ 
+        for text in data:  
+            item = QStandardItem(str(text))
+            item.setEditable(False)
+           
+            show_value = True
+            if isinstance(data[text],IHaveProperties):
+                self.addPropList(item,data[text])
+                show_value = False
+
+            elif isinstance(data[text],list):
+                for idx, it in enumerate(data[text]):
+                    list_item = QStandardItem(str(idx))
+                    list_item.setEditable(False)
+                    item.appendRow(list_item)
+                    self.addPropList(list_item,it)
+
+                show_value = False
+
+            if show_value:
+                 root.appendRow([item,QStandardItem(str(data[text]))])
+            else:
+                 root.appendRow(item)
 
 
-modem2.modem_settings.spread_factor = LoraSpreadFactor.SF_5
-modem2.modem_settings.power = 22
-modem2.modem_settings.bandwidth = LoraBandwidth.BW_125
-modem2.modem_settings.coding_rate = LoraCodingRate.CR_4_5
-modem2.modem_settings.frequency = 868000000
-modem2.modem_settings.preamble = 12
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    widget = MainWindow()
+    widget.show()
+    sys.exit(app.exec())
 
 
-
-
-def modem1_cb():
-    print(f'[{queue.time*1000} ms][M1] callback')
-
-
-def modem2_cb(packet: LoraPacket):
-    print(f'[{queue.time*1000} ms][M2] callback {packet.data}')
-
-
-modem1.set_tx_done_callback(modem1_cb)
-modem2.set_rx_done_callback(modem2_cb)
-
-modem1.send(bytes("123", 'utf-8'))
-
-timer1 = DeviceTimer(queue, 2.0)
-
-
-def timer_cb1():
-    print(f'[{queue.time*1000} ms][T_OVF] callback')
-    timer1.stop()
-
-
-def timer_cb4():
-    print(f'[{queue.time*1000} ms][T_1] callback ')
-
-
-def timer_cb2():
-    print(f'[{queue.time*1000} ms][T_CMP] callback ')
-    timer1.start_oneshot(3, timer_cb4)
-
-
-timer1.set_overflow_callback(timer_cb1)
-timer1.set_compare_callback(timer_cb2)
-timer1.set_compare(1.0)
-
-timer1.start()
-
-
-
-
-while input() != "q":
-    pass

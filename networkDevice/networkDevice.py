@@ -1,8 +1,9 @@
-from radiosim2.loraPHY.modem import LoraModem
-from radiosim2.networkDevice.deviceTimer import DeviceTimer
+from loraPHY.modem import LoraModem
+from networkDevice.deviceTimer import DeviceTimer
+from IHaveProperties import IHaveProperties
 
 
-class LoraDevice:
+class LoraDevice(IHaveProperties):
     def __init__(self):
         self.name = ""
         self.position = (0, 0)
@@ -27,3 +28,12 @@ class LoraDevice:
 
     def send_packet(self, data, modem):
         self.modems[modem].send(data, len(data))
+
+    def get_properties(self):
+        return {
+            "Имя":self.name,
+            "Позиция": self.position,
+            "Модемы": self.modems,
+            "Таймеры": self.timers,
+            "Алгоритм маршрутизации": self.routing_strategy
+            }
