@@ -27,4 +27,7 @@ class ModemSettings(IHaveProperties):
             "Длина преамбулы": self.preamble,
             "Мощность": self.power
         }
+    def get_minimized(self):
+        return ""
+
 

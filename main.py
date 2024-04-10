@@ -4,7 +4,7 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PySide6.QtCore import QStringListModel
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-
+from QCustomItemDelegate import CustomItemDelegate, CustomItem
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
@@ -33,7 +33,9 @@ class MainWindow(QMainWindow):
         self.propertiesTableModel = QStandardItemModel()
         self.propertiesTableModel.setHorizontalHeaderLabels(["Свойство","Значение"])
         self.propertiesTableModel.setColumnCount(2)
+        delegate = CustomItemDelegate()
         self.ui.treeView.setModel(self.propertiesTableModel)
+        self.ui.treeView.setItemDelegate(delegate)
 
     def show(self):
         super(MainWindow, self).show()
@@ -66,25 +68,33 @@ class MainWindow(QMainWindow):
         else:
             data = obj.__dict__ 
         for text in data:  
-            item = QStandardItem(str(text))
+            item = CustomItem(str(text))
             item.setEditable(False)
            
             show_value = True
             if isinstance(data[text],IHaveProperties):
                 self.addPropList(item,data[text])
-                show_value = False
+                show_value = len(data[text].get_minimized()) != 0
 
             elif isinstance(data[text],list):
                 for idx, it in enumerate(data[text]):
-                    list_item = QStandardItem(str(idx))
+                    list_item = CustomItem(str(idx))
                     list_item.setEditable(False)
                     item.appendRow(list_item)
                     self.addPropList(list_item,it)
 
                 show_value = False
+            elif isinstance(data[text],tuple):
+                for idx, it in enumerate(data[text]):
+                    list_item = CustomItem(str(idx))
+                    list_item.setEditable(False)
+                    val_item = CustomItem(str(it))
+
+                    item.appendRow([list_item,val_item])
+                item.setEditable(False)
 
             if show_value:
-                 root.appendRow([item,QStandardItem(str(data[text]))])
+                 root.appendRow([item,CustomItem(data[text])])
             else:
                  root.appendRow(item)
 

@@ -1,6 +1,11 @@
 from enum import Enum
 
-class LoraSpreadFactor(Enum):
+class PrintableEnum(Enum):
+    def __str__(self):
+        return self.name
+
+
+class LoraSpreadFactor(PrintableEnum):
     UNDEFINED = 0
     SF_5 = 5
     SF_6 = 6
@@ -11,15 +16,14 @@ class LoraSpreadFactor(Enum):
     SF_11 = 11
     SF_12 = 12
 
-
-class LoraBandwidth(Enum):
+class LoraBandwidth(PrintableEnum):
     UNDEFINED = 0
     BW_125 = 1
     BW_250 = 2
     BW_500 = 3
 
 
-class LoraCodingRate(Enum):
+class LoraCodingRate(PrintableEnum):
     UNDEFINED = 0
     CR_4_5 = 1
     CR_4_6 = 2
@@ -27,7 +31,7 @@ class LoraCodingRate(Enum):
     CR_4_8 = 4
 
 
-class LoraModemState(Enum):
+class LoraModemState(PrintableEnum):
     IDLE = 0
     STARTED = 1
     TRANSMITTING = 2

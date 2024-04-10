@@ -1,12 +1,12 @@
 from loraPHY.modem import LoraModem
 from networkDevice.deviceTimer import DeviceTimer
 from IHaveProperties import IHaveProperties
-
+from position import Position
 
 class LoraDevice(IHaveProperties):
     def __init__(self):
         self.name = ""
-        self.position = (0, 0)
+        self.position = Position(0, 0)
         self.modems: list[LoraModem] = []
         self.timers: dict[str, DeviceTimer] = {}
         self.routing_strategy = None
@@ -37,3 +37,5 @@ class LoraDevice(IHaveProperties):
             "Таймеры": self.timers,
             "Алгоритм маршрутизации": self.routing_strategy
             }
+    def get_minimized(self):
+        return ""

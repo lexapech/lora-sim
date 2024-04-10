@@ -62,6 +62,10 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties):
     def get_properties(self):
         return {"Конфигурация модема": self.modem_settings}
 
+    def get_minimized(self):
+        return ""
+
+
     def calculate_modem_startup_time(self):
         return 0.0015
 
