@@ -6,11 +6,12 @@ class CustomItem(QtGui.QStandardItem):
         super(CustomItem,self).__init__(str(data))
         self._data=data
 
-    def data(self,role=QtCore.Qt.UserRole):
+    def data(self,role=QtCore.Qt.UserRole+1):
+        print(role)
         if role == 1000 and not isinstance(self._data,str):
             return self._data
         return super().data(role)
-    def setData(self,value,role=QtCore.Qt.UserRole):
+    def setData(self,value,role=QtCore.Qt.UserRole+1):
         if role == 1000 and not isinstance(self._data,str):
             self._data=value
             super().setData(str(value),QtCore.Qt.DisplayRole)
@@ -23,6 +24,7 @@ class CustomItemDelegate(QtWidgets.QStyledItemDelegate):
         super().__init__(parent)
     
     def createEditor(self, parent, option, index):
+        
         data = index.model().data(index,1000)
         if isinstance(data,Enum) or isinstance(data,bool):  # If this is a ComboBox column (0-indexed)
             combo = QtWidgets.QComboBox(parent)

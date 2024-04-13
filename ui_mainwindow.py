@@ -16,10 +16,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QGraphicsView, QGridLayout, QHBoxLayout,
-    QHeaderView, QListView, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
-    QSplitter, QTextEdit, QTreeView, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QHeaderView,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QTextEdit,
+    QTreeView, QWidget)
+
+from widgets.DeviceListWidget import DeviceListWidget
+from widgets.WorkspaceWidget import WorkspaceWidget
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -117,7 +120,7 @@ class Ui_MainWindow(object):
         self.splitter.setOrientation(Qt.Vertical)
         self.widget_2 = QWidget(self.splitter)
         self.widget_2.setObjectName(u"widget_2")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
@@ -128,32 +131,48 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.splitter_2 = QSplitter(self.widget_2)
         self.splitter_2.setObjectName(u"splitter_2")
-        sizePolicy2.setHeightForWidth(self.splitter_2.sizePolicy().hasHeightForWidth())
-        self.splitter_2.setSizePolicy(sizePolicy2)
-        self.splitter_2.setOrientation(Qt.Horizontal)
-        self.listView = QListView(self.splitter_2)
-        self.listView.setObjectName(u"listView")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.listView.sizePolicy().hasHeightForWidth())
-        self.listView.setSizePolicy(sizePolicy3)
+        sizePolicy3.setHeightForWidth(self.splitter_2.sizePolicy().hasHeightForWidth())
+        self.splitter_2.setSizePolicy(sizePolicy3)
+        self.splitter_2.setOrientation(Qt.Horizontal)
+        self.listView = DeviceListWidget(self.splitter_2)
+        self.listView.setObjectName(u"listView")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.listView.sizePolicy().hasHeightForWidth())
+        self.listView.setSizePolicy(sizePolicy4)
+        self.listView.setBaseSize(QSize(200, 0))
         self.splitter_2.addWidget(self.listView)
-        self.graphicsView = QGraphicsView(self.splitter_2)
+        self.graphicsView = WorkspaceWidget(self.splitter_2)
         self.graphicsView.setObjectName(u"graphicsView")
-        sizePolicy3.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy3)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
+        self.graphicsView.setSizePolicy(sizePolicy5)
         self.splitter_2.addWidget(self.graphicsView)
         self.treeView = QTreeView(self.splitter_2)
         self.treeView.setObjectName(u"treeView")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.treeView.sizePolicy().hasHeightForWidth())
+        self.treeView.setSizePolicy(sizePolicy6)
+        self.treeView.setBaseSize(QSize(200, 0))
         self.treeView.setAlternatingRowColors(True)
         self.splitter_2.addWidget(self.treeView)
 
         self.horizontalLayout_6.addWidget(self.splitter_2)
 
+        self.horizontalLayout_6.setStretch(0, 1)
         self.splitter.addWidget(self.widget_2)
         self.textEdit = QTextEdit(self.splitter)
         self.textEdit.setObjectName(u"textEdit")
+        sizePolicy.setHeightForWidth(self.textEdit.sizePolicy().hasHeightForWidth())
+        self.textEdit.setSizePolicy(sizePolicy)
         font = QFont()
         font.setFamilies([u"Segoe UI Symbol"])
         font.setKerning(False)
@@ -168,7 +187,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 22))
+        self.menubar.setGeometry(QRect(0, 0, 800, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)

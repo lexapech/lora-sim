@@ -23,7 +23,7 @@ class WorkerThread(QThread):
     @Slot()  # QtCore.Slot
     def run(self):
 
-        self.logger.log("helololo")
+        self.logger.log("Worker thread started")
         
         queue = EventQueue()
 

@@ -2,7 +2,7 @@
 import sys
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PySide6.QtCore import QStringListModel
+from PySide6.QtCore import QStringListModel, Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from QCustomItemDelegate import CustomItemDelegate, CustomItem
 # Important:
@@ -21,15 +21,13 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.workerThread = WorkerThread()
         self.workerThread.logger.message.connect(self.printLogs)
-        self.workerThread.simulation.deviceListChanged.connect(self.updateDeviceList)
+       
  
-        self.devices=[]
         self.ui.setupUi(self)
-
-        self.deviceListModel = QStringListModel()
-        self.ui.listView.setModel(self.deviceListModel)
+        self.workerThread.simulation.deviceListChanged.connect(self.ui.listView.updateDeviceList)
         self.ui.listView.clicked.connect(self.on_listview_selection_changed)
-
+        self.ui.listView.create_device.connect(self.workerThread.simulation.create_empty_device)
+        self.ui.listView.delete_device.connect(self.workerThread.simulation.delete_device)
         self.propertiesTableModel = QStandardItemModel()
         self.propertiesTableModel.setHorizontalHeaderLabels(["Свойство","Значение"])
         self.propertiesTableModel.setColumnCount(2)
@@ -44,24 +42,21 @@ class MainWindow(QMainWindow):
     def printLogs(self,message):
         self.ui.textEdit.append(message)
 
-    def updateDeviceList(self, devices: list[LoraDevice]):
-        self.devices = devices
-        self.deviceListModel.setStringList([x.name for x in devices])
-
     def on_listview_selection_changed(self):
     # Get selection object from view
         selected = self.ui.listView.selectedIndexes()
             
         for index in selected:
             # Retrieve data from the model using QModelIndex
-            self.updatePropertiesTable(self.devices[index.row()])
+            self.updatePropertiesTable(self.ui.listView.devices[index.row()])
 
     def updatePropertiesTable(self,device):
         
         root = self.propertiesTableModel.invisibleRootItem()
         self.propertiesTableModel.removeRows(0,root.rowCount(),self.propertiesTableModel.indexFromItem(root))
         self.addPropList(root,device)
-        
+
+
     def addPropList(self,root,obj):
         if isinstance(obj,IHaveProperties):
             data = obj.get_properties()
@@ -70,13 +65,16 @@ class MainWindow(QMainWindow):
         for text in data:  
             item = CustomItem(str(text))
             item.setEditable(False)
-           
             show_value = True
+            editable = True
             if isinstance(data[text],IHaveProperties):
                 self.addPropList(item,data[text])
                 show_value = len(data[text].get_minimized()) != 0
+                editable = False
 
             elif isinstance(data[text],list):
+                editable = False
+
                 for idx, it in enumerate(data[text]):
                     list_item = CustomItem(str(idx))
                     list_item.setEditable(False)
@@ -89,19 +87,23 @@ class MainWindow(QMainWindow):
                     list_item = CustomItem(str(idx))
                     list_item.setEditable(False)
                     val_item = CustomItem(str(it))
-
+                    val_item.setEditable(False)
                     item.appendRow([list_item,val_item])
-                item.setEditable(False)
 
             if show_value:
-                 root.appendRow([item,CustomItem(data[text])])
+                val_item = CustomItem(data[text])
+                val_item.setEditable(editable)
+                root.appendRow([item,val_item])
             else:
-                 root.appendRow(item)
+                val_item = CustomItem("")
+                val_item.setEditable(False)
+                root.appendRow([item,val_item])
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     widget = MainWindow()
+    widget.setWindowState(Qt.WindowMaximized)
     widget.show()
     sys.exit(app.exec())
 
