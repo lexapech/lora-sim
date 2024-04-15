@@ -19,8 +19,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QHeaderView,
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QSizePolicy, QSpacerItem, QSplitter, QTextEdit,
-    QTreeView, QWidget)
+    QWidget)
 
+from widgets.CustomTreeWidget import CustomTreeWidget
 from widgets.DeviceListWidget import DeviceListWidget
 from widgets.WorkspaceWidget import WorkspaceWidget
 
@@ -154,7 +155,7 @@ class Ui_MainWindow(object):
         sizePolicy5.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
         self.graphicsView.setSizePolicy(sizePolicy5)
         self.splitter_2.addWidget(self.graphicsView)
-        self.treeView = QTreeView(self.splitter_2)
+        self.treeView = CustomTreeWidget(self.splitter_2)
         self.treeView.setObjectName(u"treeView")
         sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         sizePolicy6.setHorizontalStretch(0)

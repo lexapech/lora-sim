@@ -22,18 +22,18 @@ class MainWindow(QMainWindow):
         self.workerThread = WorkerThread()
         self.workerThread.logger.message.connect(self.printLogs)
        
- 
+        self.selected = None
+
         self.ui.setupUi(self)
         self.workerThread.simulation.deviceListChanged.connect(self.ui.listView.updateDeviceList)
+        self.workerThread.simulation.deviceListChanged.connect(self.ui.graphicsView.updateDeviceList)
+        self.workerThread.simulation.deviceListChanged.connect(self.updatePropertiesTableList)
+        self.ui.treeView.data_changed_signal.connect(self.workerThread.update_property)
         self.ui.listView.clicked.connect(self.on_listview_selection_changed)
         self.ui.listView.create_device.connect(self.workerThread.simulation.create_empty_device)
         self.ui.listView.delete_device.connect(self.workerThread.simulation.delete_device)
-        self.propertiesTableModel = QStandardItemModel()
-        self.propertiesTableModel.setHorizontalHeaderLabels(["Свойство","Значение"])
-        self.propertiesTableModel.setColumnCount(2)
-        delegate = CustomItemDelegate()
-        self.ui.treeView.setModel(self.propertiesTableModel)
-        self.ui.treeView.setItemDelegate(delegate)
+        self.ui.graphicsView.selectionChanged.connect(self.on_workspace_selection)
+        self.ui.listView.data_changed.connect(self.workerThread.simulation.update_device_list)
 
     def show(self):
         super(MainWindow, self).show()
@@ -42,69 +42,46 @@ class MainWindow(QMainWindow):
     def printLogs(self,message):
         self.ui.textEdit.append(message)
 
+    def on_workspace_selection(self, dev):
+        self.set_selection(dev)
+
+    def set_selection(self,dev):
+        self.selected = dev
+        self.ui.graphicsView.setSelected(dev)
+        self.ui.treeView.updatePropertiesTable(dev)
+        if dev is None:
+            index=self.ui.listView.deviceListModel.index(-1,0)
+        else:
+            index=self.ui.listView.deviceListModel.index(self.ui.listView.devices.index(dev),0)
+        self.ui.listView.setCurrentIndex(index)
+
     def on_listview_selection_changed(self):
     # Get selection object from view
         selected = self.ui.listView.selectedIndexes()
             
         for index in selected:
             # Retrieve data from the model using QModelIndex
-            self.updatePropertiesTable(self.ui.listView.devices[index.row()])
-
-    def updatePropertiesTable(self,device):
-        
-        root = self.propertiesTableModel.invisibleRootItem()
-        self.propertiesTableModel.removeRows(0,root.rowCount(),self.propertiesTableModel.indexFromItem(root))
-        self.addPropList(root,device)
-
-
-    def addPropList(self,root,obj):
-        if isinstance(obj,IHaveProperties):
-            data = obj.get_properties()
+            dev = self.ui.listView.devices[index.row()]
+            self.set_selection(dev)
+            return
+        if self.selected in self.ui.listView.devices:
+            self.set_selection(self.selected)
         else:
-            data = obj.__dict__ 
-        for text in data:  
-            item = CustomItem(str(text))
-            item.setEditable(False)
-            show_value = True
-            editable = True
-            if isinstance(data[text],IHaveProperties):
-                self.addPropList(item,data[text])
-                show_value = len(data[text].get_minimized()) != 0
-                editable = False
+            self.set_selection(None)
 
-            elif isinstance(data[text],list):
-                editable = False
 
-                for idx, it in enumerate(data[text]):
-                    list_item = CustomItem(str(idx))
-                    list_item.setEditable(False)
-                    item.appendRow(list_item)
-                    self.addPropList(list_item,it)
-
-                show_value = False
-            elif isinstance(data[text],tuple):
-                for idx, it in enumerate(data[text]):
-                    list_item = CustomItem(str(idx))
-                    list_item.setEditable(False)
-                    val_item = CustomItem(str(it))
-                    val_item.setEditable(False)
-                    item.appendRow([list_item,val_item])
-
-            if show_value:
-                val_item = CustomItem(data[text])
-                val_item.setEditable(editable)
-                root.appendRow([item,val_item])
-            else:
-                val_item = CustomItem("")
-                val_item.setEditable(False)
-                root.appendRow([item,val_item])
-
+    def updatePropertiesTableList(self,devices):
+       
+        self.on_listview_selection_changed()
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     widget = MainWindow()
     widget.setWindowState(Qt.WindowMaximized)
     widget.show()
-    sys.exit(app.exec())
+    ret = app.exec()
+    widget.workerThread.quit()
+    sys.exit(ret)
 
 

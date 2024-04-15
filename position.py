@@ -1,5 +1,5 @@
 from IHaveProperties import IHaveProperties
-
+from Property import Property
 class Position(IHaveProperties):
     def __init__(self, x=0, y=0):
         self.x = x
@@ -10,9 +10,8 @@ class Position(IHaveProperties):
 
     def get_properties(self):
         return {
-            "x": self.x,
-            "y": self.y
+            "x": Property(self,'x',float),
+            "y": Property(self,'y',float)
             }
     def get_minimized(self):
-        print("here")
         return str(self)

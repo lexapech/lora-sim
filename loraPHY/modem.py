@@ -40,27 +40,29 @@ from radioEnvironment.radioEnvironment import RadioEnvironment
 from loraPHY.loraPacket import LoraPacket
 from typing import Callable
 from IHaveProperties import IHaveProperties
-
+from networkDevice.INetworkDevice import INetworkDevice
+from Property import Property
 
 class LoraModem(IEventSubscriber, IModem, IHaveProperties):
-    def __init__(self, event_queue: IEventQueue, radio_env: RadioEnvironment):
+    def __init__(self, device: INetworkDevice):
         self.modem_settings = ModemSettings()
         self.modem_state = LoraModemState.IDLE
         self.current_transmission: RadioTransmission or None = None
         self.modem_busy = False
         self.tx_callback = None
-        self.position = (0, 0)
-        self.rx_callback: Callable[[LoraPacket], None] or None = None
+        self.device = device
+        self.device.add_modem(self)
+        self.rx_callback: Callable[[LoraPacket], None] or None = self.device.packet_received
         self.preamble_callback = None
         self.received_buffer_size = 10
-        self.event_queue = event_queue
-        self.radio_env = radio_env
+        self.event_queue =  device.get_event_queue()
+        self.radio_env = device.get_radio_environment()
         self.last_received: LoraPacket or None = None
         self.radio_env.register_modem(self)
         self.event_queue.subscribe(self, (self, "STATE"))
 
     def get_properties(self):
-        return {"Конфигурация модема": self.modem_settings}
+        return {"Конфигурация модема": Property(self,'modem_settings')}
 
     def get_minimized(self):
         return ""
@@ -170,4 +172,4 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties):
             self.process_state_change(LoraModemState.RX_DONE)
 
     def get_position(self) -> tuple[float, float]:
-        return self.position
+        return (self.device.position.x,self.device.position.y)

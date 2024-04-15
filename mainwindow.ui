@@ -228,7 +228,7 @@
                </sizepolicy>
               </property>
              </widget>
-             <widget class="QTreeView" name="treeView">
+             <widget class="CustomTreeWidget" name="treeView">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -333,6 +333,11 @@
    <class>WorkspaceWidget</class>
    <extends>QGraphicsView</extends>
    <header>widgets.WorkspaceWidget</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomTreeWidget</class>
+   <extends>QTreeView</extends>
+   <header>widgets.CustomTreeWidget</header>
   </customwidget>
  </customwidgets>
  <resources/>
