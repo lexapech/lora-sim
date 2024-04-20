@@ -1,22 +1,30 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PySide6.QtCore import QStringListModel, Qt
+from PySide6.QtWidgets import QApplication, QMainWindow,QFileDialog, QTableWidgetItem
+from PySide6.QtCore import QStringListModel, Qt,Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from QCustomItemDelegate import CustomItemDelegate, CustomItem
+
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
 from ui_mainwindow import Ui_MainWindow
+import json
 
 from main2 import WorkerThread
 from networkDevice.networkDevice import LoraDevice
 from IHaveProperties import IHaveProperties
+from simulation import SimulationState
+
+log=None
 
 class MainWindow(QMainWindow):
+    file_loaded = Signal(dict)
     def __init__(self, parent=None):
+        global log 
+        log = self.printLogs
         super(MainWindow, self).__init__(parent=parent)
         self.ui = Ui_MainWindow()
         self.workerThread = WorkerThread()
@@ -25,6 +33,7 @@ class MainWindow(QMainWindow):
         self.selected = None
 
         self.ui.setupUi(self)
+        self.file_loaded.connect(self.workerThread.load_simulation)
         self.workerThread.simulation.deviceListChanged.connect(self.ui.listView.updateDeviceList)
         self.workerThread.simulation.deviceListChanged.connect(self.ui.graphicsView.updateDeviceList)
         self.workerThread.simulation.deviceListChanged.connect(self.updatePropertiesTableList)
@@ -35,12 +44,56 @@ class MainWindow(QMainWindow):
         self.ui.graphicsView.selectionChanged.connect(self.on_workspace_selection)
         self.ui.listView.data_changed.connect(self.workerThread.simulation.update_device_list)
 
+        self.ui.pushButton_3.clicked.connect(self.workerThread.simulation.start)
+        self.ui.pushButton_2.clicked.connect(self.workerThread.simulation.pause)
+        self.ui.pushButton.clicked.connect(self.workerThread.simulation.stop)
+        self.workerThread.simulation.state_changed.connect(self.update_buttons)
+
+        self.ui.action.triggered.connect(self.workerThread.reset)
+        self.ui.action_2.triggered.connect(self.open_file)
+        self.ui.action_4.triggered.connect(self.save_file)
+
+    def open_file(self):
+        filters = ["JSON files (*.json)"]  # define your own filter here
+        fileName, _ = QFileDialog.getOpenFileName(self, 'Open File', 'simulation.json',";;".join(filters))
+        if fileName:
+            file = open(fileName,"r")
+            self.file_loaded.emit(json.loads(file.read())) 
+            file.close()
+            log(f"Project loaded from file {fileName}")  # or do something else with the filename
+        
+    def save_file(self):
+        filters = ["JSON files (*.json)"]  # define your own filter here
+        fileName, _ = QFileDialog.getSaveFileName(self, 'Save File', 'simulation',";;".join(filters))
+        if fileName:
+            file = open(fileName,"w")
+            file.write(json.dumps( self.workerThread.simulation.to_json()))
+            file.close()
+            log(f"Project saved to file {fileName}")   # or do something else with the filename
+        
+
     def show(self):
         super(MainWindow, self).show()
         self.workerThread.start()
 
-    def printLogs(self,message):
-        self.ui.textEdit.append(message)
+    def update_buttons(self,state):
+        if state == SimulationState.STARTED:
+            self.ui.pushButton_3.setDown(True)
+            self.ui.pushButton_2.setDown(False)
+            self.ui.pushButton.setDown(False)
+        elif state == SimulationState.PAUSED:
+            self.ui.pushButton_3.setDown(False)
+            self.ui.pushButton_2.setDown(True)
+            self.ui.pushButton.setDown(False)
+        elif state == SimulationState.STOPPED:
+            self.ui.pushButton_3.setDown(False)
+            self.ui.pushButton_2.setDown(False)
+            self.ui.pushButton.setDown(False)
+
+
+    def printLogs(self,*message: object):
+        for o in message:
+            self.ui.textEdit.append(str(o))
 
     def on_workspace_selection(self, dev):
         self.set_selection(dev)
@@ -81,7 +134,7 @@ if __name__ == "__main__":
     widget.setWindowState(Qt.WindowMaximized)
     widget.show()
     ret = app.exec()
-    widget.workerThread.quit()
+    widget.workerThread.stop()
     sys.exit(ret)
 
 

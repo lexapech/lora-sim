@@ -17,7 +17,6 @@ class DeviceListWidget(QListView):
     
     def list_data_changed(self,e):
         
-        print(self.devices[e.row()], self.deviceListModel.itemData(e))
         device = self.devices[e.row()]
         device.name = self.deviceListModel.itemData(e)[0]
         self.data_changed.emit()

@@ -3,9 +3,10 @@ from typing import Any
 from .enums import LoraBandwidth, LoraSpreadFactor, LoraCodingRate
 from IHaveProperties import IHaveProperties
 from Property import Property
+from ISerializable import ISerializable
 
 @dataclass()
-class ModemSettings(IHaveProperties):
+class ModemSettings(IHaveProperties, ISerializable):
     frequency: int = 0
     spread_factor: LoraSpreadFactor = LoraSpreadFactor.UNDEFINED
     coding_rate: LoraCodingRate = LoraCodingRate.UNDEFINED
@@ -15,6 +16,26 @@ class ModemSettings(IHaveProperties):
     crc = False
     preamble = 0
     power = 0
+
+    @staticmethod
+    def init(arg):
+        return ModemSettings()
+
+    def from_json(self,json,attr_types=None):
+        return super().from_json(json,{
+            'frequency': int,
+            'spread_factor': LoraSpreadFactor,
+            'coding_rate':LoraCodingRate,
+            'bandwidth': LoraBandwidth,
+            'low_date_rate': bool,
+            'header':bool,
+            'crc': bool,
+            'preamble':int,
+            'power': float
+            })
+
+    def to_json(self,attrs=[]):
+        return super().to_json(list(self.__dict__.keys()))
 
     def get_properties(self):
         return {

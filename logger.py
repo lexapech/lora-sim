@@ -11,7 +11,6 @@ class DebugLevel(Enum):
     ERROR = 8
     
 
-
 class Logger(QObject):
     message = Signal(str)
 

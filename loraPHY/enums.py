@@ -1,9 +1,9 @@
 from enum import Enum
+from ISerializable import ISerializable
 
 class PrintableEnum(Enum):
     def __str__(self):
         return self.name
-
 
 class LoraSpreadFactor(PrintableEnum):
     UNDEFINED = 0

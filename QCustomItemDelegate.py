@@ -1,12 +1,20 @@
 from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtWidgets import QFileDialog
 from enum import Enum
 from Property import Property
+from path import Path
+
+
 class CustomItem(QtGui.QStandardItem):
     def __init__(self,data):
         
         if isinstance(data,Property):
-            super(CustomItem,self).__init__(str(data.get()))
-            self._data=data
+            val = data.get()
+            if isinstance(val,list):
+                super(CustomItem,self).__init__(str(""))
+            else:
+                super(CustomItem,self).__init__(str(val))
+            self._data=data   
         else:     
             super(CustomItem,self).__init__(str(data))
             self._data=data
@@ -45,6 +53,12 @@ class CustomItemDelegate(QtWidgets.QStyledItemDelegate):
             else:
                 combo.addItems([x.name for x in type(data)])  
             return combo
+        elif isinstance(data, Path):
+            filters = ["Python scripts (*.py)"]  # define your own filter here
+            fileName, _ = QFileDialog.getOpenFileName(None, 'Open File', 'routing.py',";;".join(filters))
+            editor = super().createEditor(parent, option, index)
+            editor.setText(fileName)
+            return editor
         else:
             return super().createEditor(parent, option, index)
     
@@ -56,6 +70,8 @@ class CustomItemDelegate(QtWidgets.QStyledItemDelegate):
             combo_index = list(type(data)).index(data)
             if combo_index != -1:
                 editor.setCurrentIndex(combo_index)
+        elif isinstance(data, Path):
+            pass
         else:
             super().setEditorData(editor, index)
     

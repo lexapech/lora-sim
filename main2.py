@@ -10,7 +10,7 @@ from networkDevice.deviceTimer import DeviceTimer
 from networkDevice.networkDevice import LoraDevice
 from simulation import Simulation
 from position import Position
-
+import threading
 from PySide6.QtCore import QThread, Slot
 from logger import Logger,DebugLevel
 from Property import Property
@@ -22,27 +22,44 @@ class WorkerThread(QThread):
         self.logger = Logger()
         self.queue = EventQueue()
         self.env = RadioEnvironment(self.queue)
-        self.simulation = Simulation(self.env)
+        self.simulation = Simulation(self.env,self.logger)
+        self.reset()
 
     def update_property(self,property: Property):
         property.commit()
         self.simulation.update_device_list()
-        print("updated",property)
+
+    def reset(self):
+        self.logger.log("Simulation resetted")
+        self.queue.clear()
+        self.env.clear()
+        self.simulation.clear()
+       
+
+
+    def stop(self):
+        self.queue.stop()
+        self.quit()
+
+    def load_simulation(self,json):
+        self.reset()
+        self.simulation.from_json(json)
+
+
+    
 
     @Slot()  # QtCore.Slot
     def run(self):
 
         self.logger.log("Worker thread started")
-        
-       
-
-        
 
         device1 = LoraDevice(self.env)
+        device2=LoraDevice(self.env)
+
         device1.name = 'device 1'
         device1.position = Position(100,0)
 
-        device2=LoraDevice(self.env)
+        
         device2.name = 'device 2'
         device2.position = Position(100,300)
 
@@ -71,41 +88,7 @@ class WorkerThread(QThread):
         self.simulation.add_device(device2)
 
 
-        def modem1_cb():
-            self.logger.log(f'[{self.queue.time*1000} ms][M1] callback')
-
-
-        def modem2_cb(packet: LoraPacket):
-            self.logger.log(f'[{self.queue.time*1000} ms][M2] callback {packet.data}')
-
-
-        modem1.set_tx_done_callback(modem1_cb)
-        modem2.set_rx_done_callback(modem2_cb)
-
-        modem1.send(bytes("123", 'utf-8'))
-
-        timer1 = DeviceTimer(self.queue, 2.0)
-
-
-        def timer_cb1():
-            self.logger.log(f'[{self.queue.time*1000} ms][T_OVF] callback')
-            timer1.stop()
-
-
-        def timer_cb4():
-            self.logger.log(f'[{self.queue.time*1000} ms][T_1] callback ')
-
-
-        def timer_cb2():
-            self.logger.log(f'[{self.queue.time*1000} ms][T_CMP] callback ')
-            timer1.start_oneshot(3, timer_cb4)
-
-
-        timer1.set_overflow_callback(timer_cb1)
-        timer1.set_compare_callback(timer_cb2)
-        timer1.set_compare(1.0)
-
-        timer1.start()
+        
         i=0
         while False:
             self.logger.log(i)

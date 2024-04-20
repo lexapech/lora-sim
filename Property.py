@@ -1,9 +1,10 @@
 class Property:
-    def __init__(self,o,attr,_type=None):
+    def __init__(self,o,attr,_type=None,add_func=None):
         self.obj = o
         self.attr = attr
         self.type = _type
         self.value=getattr(self.obj,self.attr)
+        self.add_func=add_func
 
 
     def get(self,load=False):

@@ -42,8 +42,9 @@ from typing import Callable
 from IHaveProperties import IHaveProperties
 from networkDevice.INetworkDevice import INetworkDevice
 from Property import Property
+from ISerializable import ISerializable
 
-class LoraModem(IEventSubscriber, IModem, IHaveProperties):
+class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
     def __init__(self, device: INetworkDevice):
         self.modem_settings = ModemSettings()
         self.modem_state = LoraModemState.IDLE
@@ -61,8 +62,20 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties):
         self.radio_env.register_modem(self)
         self.event_queue.subscribe(self, (self, "STATE"))
 
+    @staticmethod
+    def init(device: INetworkDevice):
+        return LoraModem(device)
+
+    def from_json(self,json,attr_types=None):
+        return super().from_json(json,{
+            'modem_settings': ModemSettings
+            })
+
+    def to_json(self,attrs=[]):
+        return super().to_json(['modem_settings'])
+
     def get_properties(self):
-        return {"Конфигурация модема": Property(self,'modem_settings')}
+        return {"Конфигурация модема": Property(self,'modem_settings', ModemSettings)}
 
     def get_minimized(self):
         return ""

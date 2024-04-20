@@ -16,3 +16,12 @@ class IEventQueue:
 
     def get_time(self):
         raise NotImplementedError
+
+    def clear(self):
+        raise NotImplementedError
+
+    def start(self):
+        raise NotImplementedError
+
+    def stop(self):
+        raise NotImplementedError

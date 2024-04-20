@@ -5,9 +5,9 @@ from eventSimulator.IEventQueue import IEventQueue
 from eventSimulator.event import DiscreteEvent
 from eventSimulator.IEventSubscriber import IEventSubscriber
 from .radioHelpers import calculate_signal_attenuation_db
-
-
-class RadioEnvironment(IEventSubscriber):
+from ISerializable import ISerializable
+from ISimulation import ISimulation
+class RadioEnvironment(IEventSubscriber,ISerializable):
     def __init__(self, event_queue: IEventQueue):
         self.noise_floor_db = 0
         self.event_queue = event_queue
@@ -15,11 +15,28 @@ class RadioEnvironment(IEventSubscriber):
         self.transmissions: list[RadioTransmission] = []
         self.event_queue.subscribe(self, (self, "TRANSMISSION"))
 
+    @staticmethod
+    def init(simulation:ISimulation):
+        return simulation.get_radio_env()
+
+    def from_json(self,json,attr_types=None):
+        return super().from_json(json,{
+            'noise_floor_db':float
+            })
+
+    def to_json(self,attrs=[]):
+        return super().to_json(['noise_floor_db'])
+
     def register_modem(self, modem: IModem):
         if modem not in self.modems:
             self.modems.append(modem)
         else:
             raise ValueError("Modem already registered")
+
+    def clear(self):
+        self.modems =[]
+        self.transmissions=[]
+        self.event_queue.subscribe(self, (self, "TRANSMISSION"))
 
     def unregister_modem(self, modem: IModem):
         self.modems.remove(modem)

@@ -8,7 +8,7 @@ class INetworkDevice():
     def send_packet(self, data, modem):
         raise NotImplementedError
 
-    def add_timer(self, name, timer: DeviceTimer):
+    def add_timer(self, timer: DeviceTimer):
         raise NotImplementedError
     
     def packet_received(self, packet):
@@ -28,3 +28,4 @@ class INetworkDevice():
     
     def get_timers(self):
         raise NotImplementedError
+

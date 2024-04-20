@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1396</width>
     <height>600</height>
    </rect>
   </property>
@@ -174,7 +174,7 @@
          </property>
          <widget class="QWidget" name="widget_2" native="true">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -182,7 +182,7 @@
           <property name="styleSheet">
            <string notr="true"/>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1">
+          <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -215,7 +215,7 @@
               </property>
               <property name="baseSize">
                <size>
-                <width>200</width>
+                <width>400</width>
                 <height>0</height>
                </size>
               </property>
@@ -227,6 +227,12 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="baseSize">
+               <size>
+                <width>600</width>
+                <height>0</height>
+               </size>
+              </property>
              </widget>
              <widget class="CustomTreeWidget" name="treeView">
               <property name="sizePolicy">
@@ -235,15 +241,30 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="minimumSize">
+               <size>
+                <width>350</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="baseSize">
                <size>
-                <width>200</width>
+                <width>800</width>
                 <height>0</height>
                </size>
               </property>
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <attribute name="headerDefaultSectionSize">
+               <number>175</number>
+              </attribute>
              </widget>
             </widget>
            </item>
@@ -275,7 +296,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1396</width>
      <height>21</height>
     </rect>
    </property>

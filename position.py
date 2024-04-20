@@ -1,6 +1,8 @@
 from IHaveProperties import IHaveProperties
 from Property import Property
-class Position(IHaveProperties):
+from ISerializable import ISerializable
+
+class Position(IHaveProperties, ISerializable):
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
@@ -15,3 +17,16 @@ class Position(IHaveProperties):
             }
     def get_minimized(self):
         return str(self)
+    
+    def to_json(self,attrs=[]):
+        return super().to_json(['x','y'])
+
+    @staticmethod
+    def init(arg):
+        return Position()
+
+    def from_json(self,json,attr_types=None):
+        return super().from_json(json,{
+            'x':float,
+            'y': float,          
+            })
