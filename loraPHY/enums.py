@@ -16,11 +16,17 @@ class LoraSpreadFactor(PrintableEnum):
     SF_11 = 11
     SF_12 = 12
 
+    def is_valid(self):
+        return self.value in [5,6,7,8,9,10,11,12]
+
 class LoraBandwidth(PrintableEnum):
     UNDEFINED = 0
     BW_125 = 1
     BW_250 = 2
     BW_500 = 3
+
+    def is_valid(self):
+        return self.value in [1,2,3]
 
 
 class LoraCodingRate(PrintableEnum):
@@ -29,6 +35,9 @@ class LoraCodingRate(PrintableEnum):
     CR_4_6 = 2
     CR_4_7 = 3
     CR_4_8 = 4
+
+    def is_valid(self):
+        return self.value in [1,2,3,4]
 
 
 class LoraModemState(PrintableEnum):

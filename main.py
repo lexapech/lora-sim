@@ -17,7 +17,7 @@ from main2 import WorkerThread
 from networkDevice.networkDevice import LoraDevice
 from IHaveProperties import IHaveProperties
 from simulation import SimulationState
-
+from widgets.About import AboutWindow
 log=None
 
 class MainWindow(QMainWindow):
@@ -41,17 +41,27 @@ class MainWindow(QMainWindow):
         self.ui.listView.clicked.connect(self.on_listview_selection_changed)
         self.ui.listView.create_device.connect(self.workerThread.simulation.create_empty_device)
         self.ui.listView.delete_device.connect(self.workerThread.simulation.delete_device)
+        self.ui.listView.duplicate_device.connect(self.workerThread.simulation.duplicate_device)
         self.ui.graphicsView.selectionChanged.connect(self.on_workspace_selection)
         self.ui.listView.data_changed.connect(self.workerThread.simulation.update_device_list)
 
         self.ui.pushButton_3.clicked.connect(self.workerThread.simulation.start)
         self.ui.pushButton_2.clicked.connect(self.workerThread.simulation.pause)
         self.ui.pushButton.clicked.connect(self.workerThread.simulation.stop)
+        
         self.workerThread.simulation.state_changed.connect(self.update_buttons)
 
         self.ui.action.triggered.connect(self.workerThread.reset)
         self.ui.action_2.triggered.connect(self.open_file)
+        self.ui.action_3.triggered.connect(self.save_file)
         self.ui.action_4.triggered.connect(self.save_file)
+        self.ui.action_6.triggered.connect(self.open_about)
+
+    def open_about(self):
+        
+        window = AboutWindow()
+        window.show()
+        QApplication.app.exec()
 
     def open_file(self):
         filters = ["JSON files (*.json)"]  # define your own filter here

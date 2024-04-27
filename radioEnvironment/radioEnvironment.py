@@ -9,7 +9,7 @@ from ISerializable import ISerializable
 from ISimulation import ISimulation
 class RadioEnvironment(IEventSubscriber,ISerializable):
     def __init__(self, event_queue: IEventQueue):
-        self.noise_floor_db = 0
+        self.noise_floor_db = -100
         self.event_queue = event_queue
         self.modems: list[IModem] = []
         self.transmissions: list[RadioTransmission] = []
@@ -44,9 +44,10 @@ class RadioEnvironment(IEventSubscriber,ISerializable):
     def start_transmission(self, transmission: RadioTransmission, duration: float):
         self.transmissions.append(transmission)
         transmission.flags.append(RadioTransmissionState.STARTED)
-
         for modem in self.modems:
-            if modem is not transmission.transmitter:
+           
+            if modem != transmission.transmitter:
+               
                 modem.transmission_start_notify(transmission)
         e = DiscreteEvent()
         e.sender = self
@@ -59,6 +60,7 @@ class RadioEnvironment(IEventSubscriber,ISerializable):
             transmission: RadioTransmission = event.data
             transmission.flags.append(RadioTransmissionState.FINISHED)
             initial_power = transmission.power
+            
             for modem in self.modems:
                 transmission.power = initial_power -\
                     calculate_signal_attenuation_db(transmission.central_frequency,

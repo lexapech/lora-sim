@@ -1,7 +1,7 @@
 import ctypes
 import os
 import time
-random_bytes = os.urandom(100)
+#random_bytes = os.urandom(100)
 
 parity=[
     [0x0,0x3,0x5,0x6,0x9,0xa,0xc,0xf,0x11,0x12,0x14,0x17,0x18,0x1b,0x1d,0x1e],
@@ -111,33 +111,43 @@ def code46(arr):
 def pack_bytes(arr, out_bits=8, in_bits=8):
     fifo_size = 4 * max(in_bits,out_bits)
     free = fifo_size
-    avail=fifo_size
+    avail=0
     arr_idx=0
     fifo=0
     res=[]
-    while avail >= out_bits and avail >= free:
+    while True:
         while free >=in_bits and arr_idx < len(arr):
             fifo |= (arr[arr_idx]&((1<<in_bits)-1)) << (free - in_bits)
             free -= in_bits
+            avail+=in_bits
+            
             arr_idx+=1  
         if avail >= out_bits:
-            res.append((fifo & ((1 << avail)-1))  >> (avail - out_bits))
+            #print("avil",avail)
+            #print("free",free)
+            #print(hex(fifo))
+            res.append(fifo >> (fifo_size - out_bits))
             avail-=out_bits
-            if avail < fifo_size-out_bits and free < fifo_size:
-                avail+=out_bits
-                fifo <<= out_bits
-                fifo &= (1<<fifo_size) - 1
-                free += out_bits
+            #print("shift")
+            #avail+=out_bits
+            fifo <<= out_bits
+            fifo &= (1<<fifo_size) - 1
+            free += out_bits
+        else:
+            if avail == 0:
+                break
+            else:
+                avail=out_bits
     return res
 
 
-print([hex(x) for x in pack_bytes(random_bytes,8,4)])
+#print([hex(x) for x in pack_bytes([1,2,3,4,5,6],8,4)])
 
-print([hex(x) for x in random_bytes])
-start = time.time()
-c = code4_5678(random_bytes,6)
-c[0]^=4
-v,e = decode4_5678(c,6)
+#print([hex(x) for x in random_bytes])
+#start = time.time()
+#c = code4_5678(random_bytes,6)
+#c[0]^=4
+#v,e = decode4_5678(c,6)
 #print(time.time() - start)
 #print([hex(x) for x in v],e)
 

@@ -14,9 +14,12 @@ class DebugLevel(Enum):
 class Logger(QObject):
     message = Signal(str)
 
-    def __init__(self):
+    def __init__(self,queue):
         super(Logger, self).__init__()
-        pass
+        self.queue = queue
 
     def log(self,message,sender=None, level=DebugLevel.INFO):
-        self.message.emit(str(message))
+        if sender is not None:
+            self.message.emit(f"<p>[{self.queue.time*1000:.2f} ms][{str(sender)}] {str(message)}</p>")
+        else:
+            self.message.emit(f"[{self.queue.time*1000:.2f} ms] {str(message)}")

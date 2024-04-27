@@ -38,6 +38,9 @@ class Simulation(QObject,ISerializable,ISimulation):
     def get_radio_env(self):
         return self.env 
 
+    def get_logger(self):
+        return self.logger 
+
     def from_json(self,json,attr_types=None):
         super().from_json(json,{
             'devices':LoraDevice,
@@ -65,9 +68,11 @@ class Simulation(QObject,ISerializable,ISimulation):
 
     def start(self):
         if self.state in [SimulationState.CREATED,SimulationState.STOPPED] :
+            #self.logger.log(self.env.event_queue.get_time())
             self.state_at_start = self.to_json()
+            #self.logger.log(self.env.event_queue.get_time())
             self.env.event_queue.start()
-            self.temp_init()
+            #self.temp_init()
             for dev in self.devices:
                 dev.execute_script()
 
@@ -85,12 +90,14 @@ class Simulation(QObject,ISerializable,ISimulation):
             self.env.event_queue.stop()
             while self.env.event_queue.locked:
                 pass
+            self.logger.log("Simulation stopped")
             self.env.event_queue.clear()
             self.env.clear()
             self.from_json(self.state_at_start)
+            #self.logger.log(self.env.event_queue.get_time())
             #self.temp_init()
             self.set_state(SimulationState.STOPPED)
-            self.logger.log("Simulation stopped")
+            
 
     def pause(self):
         if self.state == SimulationState.STARTED:
@@ -120,6 +127,18 @@ class Simulation(QObject,ISerializable,ISimulation):
         else:
             raise ValueError("device not found")
 
+    def duplicate_device(self,device: LoraDevice):
+        if device in self.devices:
+            print("dumpp")
+            dev = device.to_json()
+            new_dev = LoraDevice.init(self)
+            new_dev.from_json(dev)
+            new_dev.late_init()
+            self.add_device(new_dev)
+            self.deviceListChanged.emit(self.devices)
+        else:
+            raise ValueError("device not found")
+
 
     def temp_init(self):
 
@@ -131,16 +150,16 @@ class Simulation(QObject,ISerializable,ISimulation):
 
 
         def modem2_cb(packet: LoraPacket):
-            self.logger.log(f'[{self.env.event_queue.time*1000} ms][M2] callback {packet.data}')
+            self.logger.log(f'[{self.env.event_queue.time*1000} ms][M2] callback {packet[0][0]}')
+            self.logger.log(f'RSSI: {packet[1]}')
 
 
         modem1.set_tx_done_callback(modem1_cb)
         modem2.set_rx_done_callback(modem2_cb)
-
-        modem1.send(bytes("123", 'utf-8'))
+       
 
         timer1 = DeviceTimer(self.env.event_queue, 2.0)
-
+        self.logger.log("timer crated")
 
         def timer_cb1():
             self.logger.log(f'[{self.env.event_queue.time*1000} ms][T_OVF] callback')
@@ -148,8 +167,9 @@ class Simulation(QObject,ISerializable,ISimulation):
 
 
         def timer_cb4():
-            #self.logger.log(f'[{self.queue.time*1000} ms][T_1] callback ')
+            #self.logger.log(f'[{self.env.event_queue.time*1000} ms][T_1] callback ')
             print(f'[{self.env.event_queue.time*1000} ms][T_1] callback ')
+            modem1.send([1,2,3,4,5,6])
             timer1.start_oneshot(1, timer_cb4)
 
         def timer_cb2():

@@ -39,7 +39,7 @@ class ModemSettings(IHaveProperties, ISerializable):
 
     def get_properties(self):
         return {
-            "Частота": Property(self,'frequency'),
+            "Частота": Property(self,'frequency',int),
             "Spread Factor": Property(self,'spread_factor'),
             "Coding Rate": Property(self,'coding_rate'),
             "Ширина канала": Property(self,'bandwidth'),
@@ -47,7 +47,7 @@ class ModemSettings(IHaveProperties, ISerializable):
             "Header": Property(self,'header'),
             "CRC": Property(self,'crc'),
             "Длина преамбулы": Property(self,'preamble'),
-            "Мощность": Property(self,'power')
+            "Мощность": Property(self,'power',float)
         }
     def get_minimized(self):
         return ""

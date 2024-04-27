@@ -7,16 +7,18 @@ from networkDevice.INetworkDevice import INetworkDevice
 from loraPHY.loraPacket import LoraPacket
 from loraPHY.modem import LoraModem
 from Property import Property
-from ISerializable import ISerializable
+from ISerializable import ISerializable,SerializableDict
 from ISimulation import ISimulation
 from path import Path
 import os
 from IRoutingStrategy import IRoutingStrategy
 import inspect
-
+import importlib
 class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
-    def __init__(self, radio_env: RadioEnvironment = None):
+    def __init__(self, radio_env: RadioEnvironment = None,logger=None):
         self.name = ""
+        self.logger = logger
+        self.custom_props=SerializableDict()
         self.position = Position(0, 0)
         self.modems: list[LoraModem] = []
         self.timers: list[DeviceTimer] = []
@@ -27,11 +29,21 @@ class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
 
     @staticmethod
     def init(simulation:ISimulation):
-        return LoraDevice(simulation.get_radio_env())
+        dev = LoraDevice(simulation.get_radio_env(),simulation.get_logger())
+        return dev
+
+    def late_init(self):
+        self.set_routing(self.routing_strategy)
 
     def from_json(self,json,attr_types=None):
         self.modems=[]
         self.timers=[]
+        #self.custom_props = json[]
+        if 'custom_props' in json:
+            self.custom_props = SerializableDict(json.pop('custom_props'))
+             
+
+        #print(self.custom_props)
         return super().from_json(json,{
             'position':Position,
             'modems': LoraModem,
@@ -40,8 +52,11 @@ class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
             'name': str
             })
 
+    def add_property(self,name,property:Property):
+        self.custom_props[name] = property
+
     def to_json(self,attrs=[]):
-        return super().to_json(['name','position','modems','timers','routing_strategy'])
+        return super().to_json(['name','position','modems','timers','routing_strategy','custom_props'])
 
     def add_modem(self, modem: LoraModem):
         if modem not in self.modems:
@@ -85,29 +100,65 @@ class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
         self.modems[modem].send(data, len(data))
 
     def execute_script(self):
-        if os.path.isfile(self.routing_strategy.path):
-            f = open(self.routing_strategy.path,"r")
-            globals={}
-            locals={}
+        self.set_routing(self.routing_strategy)
+        if self.router_class is not None:
             try:
-                exec(f.read(),None ,locals)
-                f.close()
+                self.router_class.start()
+            except Exception as ex:
+                self.logger.log(repr(ex),self)
+
+
+    def get_logger(self):
+        return self.logger
+
+    def set_routing(self,path):
+        self.routing_strategy = path
+        if os.path.isfile(self.routing_strategy.path):
+            #f = open(self.routing_strategy.path,"r")
+            #globals={}
+            #locals={}
+            try:
+                spec=importlib.util.spec_from_file_location("router",self.routing_strategy.path)
+ 
+                # creates a new module based on spec
+                foo = importlib.util.module_from_spec(spec)
+                
+                # executes the module in its own namespace
+                # when a module is imported or reloaded.
+                spec.loader.exec_module(foo)
+               # print()
+
+                #exec(f.read(),None ,locals)
+                #f.close()
                 strat:[IRoutingStrategy,None] =None
-                print(locals)
-                for e in locals:
-                    if inspect.isclass(locals[e]) \
-                        and issubclass(locals[e],IRoutingStrategy)\
-                        and locals[e] != IRoutingStrategy:
-                        strat = locals[e]
+                #self.router_context = locals
+                for _, e in inspect.getmembers(foo):
+                    if inspect.isclass(e) \
+                        and issubclass(e,IRoutingStrategy)\
+                        and e != IRoutingStrategy:
+                        strat = e
                 if strat is None:
                     print("Cannot find routing strat")
                     return
                 self.router_class = strat(self)
-                self.router_class.start()
+                #self.router_class.start()
             except Exception as ex:
-                print(ex)
+                self.logger.log(repr(ex),self)
+                #print(ex)
             #print(strat)
 
+    def get_property(self,prop, default):
+        props = self.get_properties()
+        if prop in props:
+            if isinstance(props[prop],Property):              
+                return props[prop].get()
+            else:
+                return type(default)(props[prop])
+        else:
+            return default
+
+    def __str__(self):
+        return f"Device \"{self.name}\""
 
     def get_properties(self):
         return {
@@ -115,7 +166,7 @@ class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
             "Позиция": Property(self,'position'),
             "Модемы": Property(self,'modems',add_func=self.create_modem),
             "Таймеры": Property(self,'timers',add_func=self.create_timer),
-            "Алгоритм маршрутизации": Property(self,'routing_strategy',Path)
-            }
+            "Алгоритм маршрутизации": Property(self,'routing_strategy',Path,setter = self.set_routing)
+            } | self.custom_props
     def get_minimized(self):
         return ""

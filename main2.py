@@ -19,8 +19,9 @@ class WorkerThread(QThread):
 
     def __init__(self):
         super(WorkerThread, self).__init__()
-        self.logger = Logger()
+        
         self.queue = EventQueue()
+        self.logger = Logger(self.queue)
         self.env = RadioEnvironment(self.queue)
         self.simulation = Simulation(self.env,self.logger)
         self.reset()
@@ -45,14 +46,7 @@ class WorkerThread(QThread):
         self.reset()
         self.simulation.from_json(json)
 
-
-    
-
-    @Slot()  # QtCore.Slot
-    def run(self):
-
-        self.logger.log("Worker thread started")
-
+    def init():
         device1 = LoraDevice(self.env)
         device2=LoraDevice(self.env)
 
@@ -86,11 +80,18 @@ class WorkerThread(QThread):
 
         self.simulation.add_device(device1)
         self.simulation.add_device(device2)
+    
+
+    @Slot()  # QtCore.Slot
+    def run(self):
+
+        self.logger.log("Worker thread started")
+
+        
 
 
         
-        i=0
-        while False:
-            self.logger.log(i)
-            i+=1
+
+        while True:
+
             self.sleep(1)

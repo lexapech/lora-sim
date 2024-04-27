@@ -277,11 +277,20 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>300</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>Segoe UI Symbol</family>
             <kerning>false</kerning>
            </font>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </widget>
@@ -313,11 +322,13 @@
     <property name="title">
      <string>Правка</string>
     </property>
+    <addaction name="action_5"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
      <string>Справка</string>
     </property>
+    <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -341,6 +352,16 @@
   <action name="action_4">
    <property name="text">
     <string>Сохранить как</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>О программе...</string>
    </property>
   </action>
  </widget>

@@ -78,6 +78,7 @@ class WorkspaceWidget(QtWidgets.QWidget):
                 renderer2.render(painter,QRectF(pos - QPointF(10,10),pos + QPointF(10,10)))
             else:
                 renderer.render(painter,QRectF(pos - QPointF(10,10),pos + QPointF(10,10)))
+            painter.drawText(QRectF(pos + QPointF(-200,10),pos + QPointF(200,30)),d.name,Qt.AlignmentFlag.AlignCenter|Qt.TextFlag.TextDontClip)
             
 
         pen = QtGui.QPen(Qt.black, 1, Qt.DotLine)

@@ -1,5 +1,5 @@
 from networkDevice.deviceTimer import DeviceTimer
-
+from Property import Property
 
 class INetworkDevice():
     def add_modem(self):
@@ -27,5 +27,11 @@ class INetworkDevice():
         raise NotImplementedError
     
     def get_timers(self):
+        raise NotImplementedError
+
+    def get_logger(self):
+        raise NotImplementedError
+
+    def add_property(self,property:Property):
         raise NotImplementedError
 

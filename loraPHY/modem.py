@@ -90,21 +90,11 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
             length = len(payload)
         if length > len(payload):
             raise ValueError("Length greater than payload length")
-
-        self.current_transmission = RadioTransmission()
-        self.current_transmission.central_frequency = self.modem_settings.frequency
-        self.current_transmission.transmitter = self
-        self.current_transmission.power = self.modem_settings.power
-        self.current_transmission.bandwidth = calculate_lora_bandwidth(self.modem_settings.bandwidth)
-        self.current_transmission.data = LoraPacket(self.modem_settings.spread_factor,
-                                                    self.modem_settings.coding_rate,
-                                                    self.modem_settings.bandwidth)
-        self.current_transmission.data.crc = self.modem_settings.crc
-        self.current_transmission.data.data = payload
-        self.current_transmission.data.low_date_rate = self.modem_settings.low_date_rate
-        self.current_transmission.data.header = self.modem_settings.header
-        self.current_transmission.data.preamble = self.modem_settings.preamble
-        self.current_transmission.data.length = length
+        self.current_transmission = RadioTransmission(self.modem_settings.frequency,
+        calculate_lora_bandwidth(self.modem_settings.bandwidth),
+        self.modem_settings.power,
+        self,
+        LoraPacket(self.modem_settings,payload).modulate())
         self.modem_busy = True
         self.process_state_change(LoraModemState.STARTED)
 
@@ -129,14 +119,19 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
             self.modem_state = new_state
             self.change_state_after(LoraModemState.TRANSMITTING, self.calculate_modem_startup_time())
         elif new_state == LoraModemState.TRANSMITTING:
-            if isinstance(self.current_transmission, RadioTransmission) \
-                    and isinstance(self.current_transmission.data, LoraPacket):
-                duration = calculate_lora_packet_time(self.modem_settings, self.current_transmission.data.length)
+            if isinstance(self.current_transmission, RadioTransmission):
+                #duration = calculate_lora_packet_time(self.modem_settings, self.current_transmission.data.length)
+                duration = self.current_transmission.data[1]*1000000
                 self.modem_state = new_state
+                print("her")
                 self.radio_env.start_transmission(self.current_transmission, duration / 1000000.0)
         elif new_state == LoraModemState.PREAMBLE_DETECTED:
+            
             self.modem_busy = True
             self.modem_state = LoraModemState.RECEIVING
+
+
+
             if self.preamble_callback is not None:
                 self.preamble_callback()
         elif new_state == LoraModemState.TX_DONE:
@@ -148,12 +143,26 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
         elif new_state == LoraModemState.RX_DONE:
             self.modem_busy = False
             self.modem_state = LoraModemState.IDLE
-            if isinstance(self.current_transmission.data, LoraPacket):
-                self.last_received = self.current_transmission.data
-                if self.rx_callback is not None:
-                    self.rx_callback(self.last_received)
 
-            self.current_transmission = None
+            packet = LoraPacket(self.modem_settings)
+
+            data, _ = packet.demodulate(self.current_transmission.data[0],
+            self.current_transmission.data[1],
+            self.current_transmission.power,
+            self.radio_env.noise_floor_db)
+             
+            if data[1] == 0:
+                self.last_received = (data,self.current_transmission.power,self.radio_env.noise_floor_db)
+                self.current_transmission = None
+                if self.rx_callback is not None:
+                    try:
+                        self.rx_callback(self.last_received)
+                    except Exception as e:
+                        self.device.get_logger().log(repr(e),self.device)
+            else:
+                self.current_transmission = None
+            print(self,self.modem_state)
+           
 
     def notify(self, env: IEventQueue, event: DiscreteEvent):
         if (self, "STATE") in event.tags and isinstance(event.data, LoraModemState):
@@ -164,24 +173,21 @@ class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
         pass
 
     def transmission_start_notify(self, transmission: RadioTransmission):
+        print(self,self.modem_state)
         if isinstance(transmission.transmitter, LoraModem) \
                 and transmission.transmitter != self \
-                and isinstance(transmission.data, LoraPacket) \
                 and self.modem_state in [LoraModemState.IDLE] \
-                and abs(transmission.central_frequency - self.modem_settings.frequency) < 1000\
-                and transmission.data.bandwidth == self.modem_settings.bandwidth \
-                and transmission.data.coding_rate == self.modem_settings.coding_rate\
-                and transmission.data.spread_factor == self.modem_settings.spread_factor:
+                and abs(transmission.central_frequency - self.modem_settings.frequency) < 1000:
 
             preamble_time = calculate_lora_preamble_time(transmission.transmitter.modem_settings)
             self.current_transmission = transmission
-            self.change_state_after(LoraModemState.PREAMBLE_DETECTED, preamble_time / 1000000.0)
+           
+            self.modem_state=LoraModemState.RECEIVING
 
     def transmission_end_notify(self, transmission: RadioTransmission):
         if self.modem_state in [LoraModemState.TRANSMITTING] and transmission.transmitter == self:
             self.process_state_change(LoraModemState.TX_DONE)
         elif self.modem_state in [LoraModemState.RECEIVING]:
-            print(transmission.power)
             self.process_state_change(LoraModemState.RX_DONE)
 
     def get_position(self) -> tuple[float, float]:

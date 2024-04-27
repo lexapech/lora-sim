@@ -6,6 +6,7 @@ from PySide6.QtCore import QStringListModel, Qt,QEvent, Signal
 class DeviceListWidget(QListView):
     create_device = Signal()
     delete_device = Signal(LoraDevice)
+    duplicate_device = Signal(LoraDevice)
     data_changed = Signal()
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -33,9 +34,26 @@ class DeviceListWidget(QListView):
                 if menu.exec_(event.globalPos()):
                     self.create_device.emit()
             else:
-                menu.addAction('Удалить')
-                if menu.exec_(event.globalPos()):
+
+                def delete(e):
+                    print("delet")
                     self.delete_device.emit(self.devices[source.indexAt(event.pos()).row()])
+
+                def dup(e):
+                    print("dup")
+                    self.duplicate_device.emit(self.devices[source.indexAt(event.pos()).row()])
+
+                del_action = QAction('Удалить',self)
+                del_action.triggered.connect(delete)
+
+                
+                dup_action = QAction('Дублировать',self)
+                menu.addAction(del_action)
+                dup_action.triggered.connect(dup)
+                menu.addAction(dup_action)
+                if menu.exec_(event.globalPos()):
+                    pass
+                    #self.delete_device.emit(self.devices[source.indexAt(event.pos()).row()])
             
             return True
         return super().eventFilter(source,event)
