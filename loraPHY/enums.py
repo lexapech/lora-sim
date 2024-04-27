@@ -1,5 +1,5 @@
 from enum import Enum
-from ISerializable import ISerializable
+from interfaces.ISerializable import ISerializable
 
 class PrintableEnum(Enum):
     def __str__(self):

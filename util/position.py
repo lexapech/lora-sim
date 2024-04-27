@@ -1,6 +1,6 @@
-from IHaveProperties import IHaveProperties
-from Property import Property
-from ISerializable import ISerializable
+from interfaces.IHaveProperties import IHaveProperties
+from util.Property import Property
+from interfaces.ISerializable import ISerializable
 
 class Position(IHaveProperties, ISerializable):
     def __init__(self, x=0, y=0):

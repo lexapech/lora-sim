@@ -9,11 +9,11 @@ from loraPHY.loraPacket import LoraPacket
 from networkDevice.deviceTimer import DeviceTimer
 from networkDevice.networkDevice import LoraDevice
 from simulation import Simulation
-from position import Position
+from util.position import Position
 import threading
 from PySide6.QtCore import QThread, Slot
-from logger import Logger,DebugLevel
-from Property import Property
+from util.logger import Logger,DebugLevel
+from util.Property import Property
 
 class WorkerThread(QThread):
 

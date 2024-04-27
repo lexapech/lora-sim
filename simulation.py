@@ -4,9 +4,9 @@ from radioEnvironment.radioEnvironment import RadioEnvironment
 from PySide6.QtCore import QObject, Signal
 from enum import Enum
 import json
-from ISerializable import ISerializable
-from ISimulation import ISimulation
-from position import Position
+from interfaces.ISerializable import ISerializable
+from interfaces.ISimulation import ISimulation
+from util.position import Position
 from loraPHY.modem import LoraModem
 from loraPHY.enums import LoraBandwidth,LoraSpreadFactor,LoraCodingRate
 from loraPHY.loraPacket import LoraPacket

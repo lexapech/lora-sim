@@ -1,8 +1,8 @@
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QFileDialog
 from enum import Enum
-from Property import Property
-from path import Path
+from util.Property import Property
+from util.path import Path
 
 
 class CustomItem(QtGui.QStandardItem):

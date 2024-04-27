@@ -1,4 +1,4 @@
-from ISerializable import ISerializable
+from interfaces.ISerializable import ISerializable
 
 class Path(ISerializable):
     def __init__(self,path):

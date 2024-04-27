@@ -39,10 +39,10 @@ from radioEnvironment.transmission import RadioTransmission
 from radioEnvironment.radioEnvironment import RadioEnvironment
 from loraPHY.loraPacket import LoraPacket
 from typing import Callable
-from IHaveProperties import IHaveProperties
+from interfaces.IHaveProperties import IHaveProperties
 from networkDevice.INetworkDevice import INetworkDevice
-from Property import Property
-from ISerializable import ISerializable
+from util.Property import Property
+from interfaces.ISerializable import ISerializable
 
 class LoraModem(IEventSubscriber, IModem, IHaveProperties, ISerializable):
     def __init__(self, device: INetworkDevice):

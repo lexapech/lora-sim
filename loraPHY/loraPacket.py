@@ -9,7 +9,7 @@ import random
 import scipy
 import time
 from loraPHY.modemSettings import ModemSettings
-from pack_bytes import code4_5678, decode4_5678, pack_bytes
+from util.pack_bytes import code4_5678, decode4_5678, pack_bytes
 from loraPHY.lora import calculate_lora_bandwidth,calculate_lora_symbol_time
 
 def indep_roll(arr, shifts, axis=1):

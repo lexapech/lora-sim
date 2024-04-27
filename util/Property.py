@@ -1,4 +1,4 @@
-from ISerializable import ISerializable
+from interfaces.ISerializable import ISerializable
 
 class Property(ISerializable):
     def __init__(self,o,attr,_type=None,add_func=None,setter=None):

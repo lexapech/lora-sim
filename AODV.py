@@ -1,10 +1,10 @@
 
 
-from IRoutingStrategy import IRoutingStrategy
+from interfaces.IRoutingStrategy import IRoutingStrategy
 from networkDevice.INetworkDevice import INetworkDevice
 from networkDevice.deviceTimer import DeviceTimer
-from Property import Property
-from pack_bytes import pack_bytes
+from util.Property import Property
+from util.pack_bytes import pack_bytes
 from dataclasses import dataclass
 from enum import Enum
 

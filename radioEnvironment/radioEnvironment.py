@@ -5,8 +5,8 @@ from eventSimulator.IEventQueue import IEventQueue
 from eventSimulator.event import DiscreteEvent
 from eventSimulator.IEventSubscriber import IEventSubscriber
 from .radioHelpers import calculate_signal_attenuation_db
-from ISerializable import ISerializable
-from ISimulation import ISimulation
+from interfaces.ISerializable import ISerializable
+from interfaces.ISimulation import ISimulation
 class RadioEnvironment(IEventSubscriber,ISerializable):
     def __init__(self, event_queue: IEventQueue):
         self.noise_floor_db = -100

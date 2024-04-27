@@ -4,7 +4,7 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow,QFileDialog, QTableWidgetItem
 from PySide6.QtCore import QStringListModel, Qt,Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from QCustomItemDelegate import CustomItemDelegate, CustomItem
+from widgets.QCustomItemDelegate import CustomItemDelegate, CustomItem
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -15,7 +15,7 @@ import json
 
 from main2 import WorkerThread
 from networkDevice.networkDevice import LoraDevice
-from IHaveProperties import IHaveProperties
+from interfaces.IHaveProperties import IHaveProperties
 from simulation import SimulationState
 from widgets.About import AboutWindow
 log=None

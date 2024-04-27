@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Any
 from .enums import LoraBandwidth, LoraSpreadFactor, LoraCodingRate
-from IHaveProperties import IHaveProperties
-from Property import Property
-from ISerializable import ISerializable
+from interfaces.IHaveProperties import IHaveProperties
+from util.Property import Property
+from interfaces.ISerializable import ISerializable
 
 @dataclass()
 class ModemSettings(IHaveProperties, ISerializable):

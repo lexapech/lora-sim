@@ -1,5 +1,5 @@
 from networkDevice.deviceTimer import DeviceTimer
-from Property import Property
+from util.Property import Property
 
 class INetworkDevice():
     def add_modem(self):

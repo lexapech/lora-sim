@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QTreeView,QMenu
-from QCustomItemDelegate import CustomItemDelegate, CustomItem
+from widgets.QCustomItemDelegate import CustomItemDelegate, CustomItem
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtCore import Signal,QEvent
-from IHaveProperties import IHaveProperties
-from Property import Property
+from interfaces.IHaveProperties import IHaveProperties
+from util.Property import Property
 
 class CustomTreeWidget(QTreeView):
     data_changed_signal = Signal(Property)

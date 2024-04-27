@@ -1,17 +1,17 @@
 from loraPHY.modem import IModem
 from networkDevice.deviceTimer import DeviceTimer
-from IHaveProperties import IHaveProperties
-from position import Position
+from interfaces.IHaveProperties import IHaveProperties
+from util.position import Position
 from radioEnvironment.radioEnvironment import RadioEnvironment
 from networkDevice.INetworkDevice import INetworkDevice
 from loraPHY.loraPacket import LoraPacket
 from loraPHY.modem import LoraModem
-from Property import Property
-from ISerializable import ISerializable,SerializableDict
-from ISimulation import ISimulation
-from path import Path
+from util.Property import Property
+from interfaces.ISerializable import ISerializable,SerializableDict
+from interfaces.ISimulation import ISimulation
+from util.path import Path
 import os
-from IRoutingStrategy import IRoutingStrategy
+from interfaces.IRoutingStrategy import IRoutingStrategy
 import inspect
 import importlib
 class LoraDevice(IHaveProperties, INetworkDevice, ISerializable):
